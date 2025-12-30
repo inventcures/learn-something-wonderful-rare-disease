@@ -55,8 +55,11 @@ export default function ReadingList({ resources }: ReadingListProps) {
     >
       {/* Left Sidebar - Navigation */}
       <aside className="w-80 flex-shrink-0 p-10 overflow-y-auto h-screen flex flex-col">
-        {/* Title */}
-        <h1 className="font-serif font-bold text-[#fffef8] text-3xl leading-tight mb-16 tracking-tight">
+        {/* Title - Glowing white */}
+        <h1
+          className="font-serif font-bold text-white text-3xl leading-tight mb-16 tracking-tight"
+          style={{ textShadow: '0 0 20px rgba(255,255,255,0.5), 0 0 40px rgba(255,255,255,0.3)' }}
+        >
           {siteConfig.title.map((line, i) => (
             <span key={i}>
               {line}
@@ -74,21 +77,25 @@ export default function ReadingList({ resources }: ReadingListProps) {
               className={`block w-full text-left text-lg leading-snug transition-all duration-200 ${
                 index === selectedIndex
                   ? 'text-white font-semibold'
-                  : 'text-white/60 hover:text-white/80'
+                  : 'text-white/40 hover:text-white/60'
               }`}
+              style={index === selectedIndex ? {
+                textShadow: '0 0 20px rgba(255,255,255,0.5), 0 0 40px rgba(255,255,255,0.3)'
+              } : undefined}
             >
               {resource.title}
             </button>
           ))}
         </nav>
 
-        {/* Matter Logo */}
+        {/* Matter Logo - Glowing white */}
         <div className="mt-16">
           <a
             href="https://hq.getmatter.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-3 text-white/40 hover:text-white/60 transition-colors"
+            className="flex items-center gap-3 text-white hover:text-white transition-colors"
+            style={{ filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.5))' }}
           >
             {/* Matter Icon */}
             <svg
@@ -97,9 +104,8 @@ export default function ReadingList({ resources }: ReadingListProps) {
               viewBox="0 0 40 40"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              className="opacity-60"
             >
-              <rect width="40" height="40" rx="10" fill="currentColor" fillOpacity="0.2" />
+              <rect width="40" height="40" rx="10" fill="currentColor" fillOpacity="0.3" />
               <circle cx="12" cy="20" r="3" fill="currentColor" />
               <circle cx="20" cy="12" r="3" fill="currentColor" />
               <circle cx="28" cy="20" r="3" fill="currentColor" />
@@ -111,7 +117,12 @@ export default function ReadingList({ resources }: ReadingListProps) {
                 strokeLinecap="round"
               />
             </svg>
-            <span className="text-xl font-medium">Matter</span>
+            <span
+              className="text-xl font-medium"
+              style={{ textShadow: '0 0 20px rgba(255,255,255,0.5), 0 0 40px rgba(255,255,255,0.3)' }}
+            >
+              Matter
+            </span>
           </a>
         </div>
       </aside>
