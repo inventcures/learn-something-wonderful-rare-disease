@@ -54,10 +54,10 @@ export default function ReadingList({ resources }: ReadingListProps) {
       }}
     >
       {/* Left Sidebar - Navigation */}
-      <aside className="w-80 flex-shrink-0 p-10 overflow-y-auto h-screen flex flex-col">
+      <aside className="w-72 flex-shrink-0 px-8 py-10 h-screen flex flex-col">
         {/* Title - Glowing white */}
         <h1
-          className="font-serif font-bold text-white text-3xl leading-tight mb-16 tracking-tight"
+          className="font-serif font-bold text-white text-2xl leading-tight tracking-tight"
           style={{ textShadow: '0 0 20px rgba(255,255,255,0.5), 0 0 40px rgba(255,255,255,0.3)' }}
         >
           {siteConfig.title.map((line, i) => (
@@ -68,13 +68,13 @@ export default function ReadingList({ resources }: ReadingListProps) {
           ))}
         </h1>
 
-        {/* Article List */}
-        <nav className="space-y-[123px]">
+        {/* Article List - Evenly distributed */}
+        <nav className="flex-1 flex flex-col justify-evenly py-8">
           {resources.map((resource, index) => (
             <button
               key={resource.id}
               onClick={() => handleResourceChange(index)}
-              className={`block w-full text-left text-lg leading-snug transition-all duration-200 ${
+              className={`block w-full text-left text-[17px] leading-snug transition-all duration-200 ${
                 index === selectedIndex
                   ? 'text-white font-semibold'
                   : 'text-white/40 hover:text-white/60'
@@ -89,7 +89,7 @@ export default function ReadingList({ resources }: ReadingListProps) {
         </nav>
 
         {/* Matter Logo - Glowing white */}
-        <div className="mt-16">
+        <div className="pb-6">
           <a
             href="https://hq.getmatter.com"
             target="_blank"
@@ -99,13 +99,13 @@ export default function ReadingList({ resources }: ReadingListProps) {
           >
             {/* Matter Icon */}
             <svg
-              width="40"
-              height="40"
+              width="44"
+              height="44"
               viewBox="0 0 40 40"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <rect width="40" height="40" rx="10" fill="currentColor" fillOpacity="0.3" />
+              <rect width="40" height="40" rx="12" fill="currentColor" fillOpacity="0.25" />
               <circle cx="12" cy="20" r="3" fill="currentColor" />
               <circle cx="20" cy="12" r="3" fill="currentColor" />
               <circle cx="28" cy="20" r="3" fill="currentColor" />
