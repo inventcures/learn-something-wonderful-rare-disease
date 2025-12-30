@@ -54,9 +54,9 @@ export default function ReadingList({ resources }: ReadingListProps) {
       }}
     >
       {/* Left Sidebar - Navigation */}
-      <aside className="w-72 flex-shrink-0 p-10 overflow-y-auto h-screen">
+      <aside className="w-80 flex-shrink-0 p-10 overflow-y-auto h-screen flex flex-col">
         {/* Title */}
-        <h1 className="font-serif font-bold text-[#fffef8] text-3xl leading-tight mb-12 tracking-tight">
+        <h1 className="font-serif font-bold text-[#fffef8] text-3xl leading-tight mb-16 tracking-tight">
           {siteConfig.title.map((line, i) => (
             <span key={i}>
               {line}
@@ -66,12 +66,12 @@ export default function ReadingList({ resources }: ReadingListProps) {
         </h1>
 
         {/* Article List */}
-        <nav className="space-y-4">
+        <nav className="space-y-10 flex-1">
           {resources.map((resource, index) => (
             <button
               key={resource.id}
               onClick={() => handleResourceChange(index)}
-              className={`block w-full text-left text-[15px] leading-snug transition-all duration-200 ${
+              className={`block w-full text-left text-lg leading-snug transition-all duration-200 ${
                 index === selectedIndex
                   ? 'text-white font-semibold'
                   : 'text-white/60 hover:text-white/80'
@@ -81,6 +81,39 @@ export default function ReadingList({ resources }: ReadingListProps) {
             </button>
           ))}
         </nav>
+
+        {/* Matter Logo */}
+        <div className="mt-auto pt-10">
+          <a
+            href="https://hq.getmatter.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 text-white/40 hover:text-white/60 transition-colors"
+          >
+            {/* Matter Icon */}
+            <svg
+              width="40"
+              height="40"
+              viewBox="0 0 40 40"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="opacity-60"
+            >
+              <rect width="40" height="40" rx="10" fill="currentColor" fillOpacity="0.2" />
+              <circle cx="12" cy="20" r="3" fill="currentColor" />
+              <circle cx="20" cy="12" r="3" fill="currentColor" />
+              <circle cx="28" cy="20" r="3" fill="currentColor" />
+              <circle cx="20" cy="28" r="3" fill="currentColor" />
+              <path
+                d="M12 20L20 12M20 12L28 20M28 20L20 28M20 28L12 20"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+            <span className="text-xl font-medium">Matter</span>
+          </a>
+        </div>
       </aside>
 
       {/* Center - Article Preview */}
