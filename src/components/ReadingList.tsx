@@ -69,7 +69,7 @@ export default function ReadingList({ resources }: ReadingListProps) {
         </h1>
 
         {/* Article List */}
-        <nav className="space-y-11">
+        <nav className="space-y-[123px]">
           {resources.map((resource, index) => (
             <button
               key={resource.id}
