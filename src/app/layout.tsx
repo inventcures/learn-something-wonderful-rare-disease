@@ -1,5 +1,12 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
 
 export const metadata: Metadata = {
   title: "Read Something Wonderful | Rare Diseases",
@@ -16,12 +23,6 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Read Something Wonderful | Rare Diseases",
     description: "A curated collection of wonderful reading resources about rare genetic diseases.",
-  },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
   },
 };
 

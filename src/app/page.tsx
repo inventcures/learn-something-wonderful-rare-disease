@@ -1,10 +1,6 @@
-import GravityZone from "@/components/GravityZone";
+import ReadingList from "@/components/ReadingList";
 import { resources } from "@/data/resources";
 
 export default function Home() {
-  return (
-    <main className="w-full h-screen relative overflow-hidden">
-      <GravityZone resources={resources} />
-    </main>
-  );
+  return <ReadingList resources={resources} />;
 }
