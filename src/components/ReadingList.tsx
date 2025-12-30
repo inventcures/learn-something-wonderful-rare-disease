@@ -181,39 +181,42 @@ export default function ReadingList({ resources }: ReadingListProps) {
       </main>
 
       {/* Right Sidebar - Metadata */}
-      <aside className="w-80 flex-shrink-0 p-10 flex flex-col justify-center">
+      <aside className="w-96 flex-shrink-0 p-10 pt-0 flex flex-col">
+        {/* Spacer to align with article preview top area */}
+        <div className="h-[35vh]" />
+
         {/* Year */}
-        <p className="text-white/50 text-base font-mono mb-3">
+        <p className="text-white/60 text-lg mb-2">
           {selectedResource.year || '2020'}
         </p>
 
         {/* Title */}
-        <h2 className="text-white font-serif font-bold text-4xl leading-tight mb-4 tracking-tight">
+        <h2 className="text-white font-bold text-4xl leading-tight mb-3 tracking-tight">
           {selectedResource.title}
         </h2>
 
         {/* Author */}
-        <p className="text-white/90 text-xl font-medium mb-4">
+        <p className="text-white text-xl font-medium mb-2">
           {selectedResource.author}
         </p>
 
         {/* Source as Hat tip */}
         {selectedResource.source && (
-          <p className="text-white/50 text-base italic mb-10">
-            {selectedResource.source}
+          <p className="text-white/60 text-base italic mb-8">
+            Hat tip: {selectedResource.source}
           </p>
         )}
 
-        {/* Link Button Only */}
-        <div className="flex items-center">
+        {/* Link Button */}
+        <div className="flex items-center gap-3">
           <a
             href={selectedResource.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-14 h-14 rounded-2xl bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors backdrop-blur-sm"
+            className="w-12 h-12 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
             title="Open article"
           >
-            <Link2 className="w-6 h-6 text-white" />
+            <Link2 className="w-5 h-5 text-white/80" />
           </a>
         </div>
       </aside>
