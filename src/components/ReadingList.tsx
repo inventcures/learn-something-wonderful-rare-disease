@@ -83,7 +83,7 @@ export default function ReadingList({ resources }: ReadingListProps) {
         </nav>
 
         {/* Matter Logo */}
-        <div className="mt-auto pt-10">
+        <div className="mt-auto pb-16">
           <a
             href="https://hq.getmatter.com"
             target="_blank"
@@ -170,7 +170,7 @@ export default function ReadingList({ resources }: ReadingListProps) {
       </main>
 
       {/* Right Sidebar - Metadata */}
-      <aside className="w-80 flex-shrink-0 p-10 flex flex-col justify-end pb-24">
+      <aside className="w-80 flex-shrink-0 p-10 flex flex-col justify-center items-center text-center">
         {/* Year */}
         <p className="text-white/50 text-base font-mono mb-3">
           {selectedResource.year || '2020'}
@@ -194,7 +194,7 @@ export default function ReadingList({ resources }: ReadingListProps) {
         )}
 
         {/* Link Button Only */}
-        <div className="flex items-center">
+        <div className="flex items-center justify-center">
           <a
             href={selectedResource.url}
             target="_blank"
