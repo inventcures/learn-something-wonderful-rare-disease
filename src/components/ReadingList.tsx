@@ -2,27 +2,12 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Resource } from '@/data/resources';
+import { siteConfig } from '@/config/site';
 import { Link2, Loader2 } from 'lucide-react';
 
 interface ReadingListProps {
   resources: Resource[];
 }
-
-// Color palettes for different articles (gradient from top to bottom)
-const colorPalettes = [
-  { top: '#e8e4d9', bottom: '#6b6b5c' }, // Olive/khaki
-  { top: '#dce4e8', bottom: '#4a6670' }, // Steel blue
-  { top: '#e8dce0', bottom: '#6b5a5c' }, // Dusty rose
-  { top: '#e0e8dc', bottom: '#5a6b5c' }, // Sage green
-  { top: '#e8e0d8', bottom: '#6b5f52' }, // Warm brown
-  { top: '#dce0e8', bottom: '#5a5c6b' }, // Slate purple
-  { top: '#e4e8dc', bottom: '#5c6b5a' }, // Forest
-  { top: '#e8dcd8', bottom: '#6b5a52' }, // Terracotta
-  { top: '#d8e4e8', bottom: '#526b6b' }, // Teal
-  { top: '#e8e4dc', bottom: '#6b6552' }, // Golden olive
-  { top: '#e0dce8', bottom: '#5c5a6b' }, // Lavender
-  { top: '#dce8e4', bottom: '#5a6b65' }, // Sea green
-];
 
 // Use our caching API route for screenshots
 function getScreenshotUrl(url: string): string {
@@ -35,7 +20,7 @@ export default function ReadingList({ resources }: ReadingListProps) {
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
   const selectedResource = resources[selectedIndex];
-  const palette = colorPalettes[selectedIndex % colorPalettes.length];
+  const palette = siteConfig.colorPalettes[selectedIndex % siteConfig.colorPalettes.length];
 
   const handleResourceChange = useCallback((index: number) => {
     if (index >= 0 && index < resources.length) {
@@ -72,11 +57,12 @@ export default function ReadingList({ resources }: ReadingListProps) {
       <aside className="w-72 flex-shrink-0 p-10 overflow-y-auto h-screen">
         {/* Title */}
         <h1 className="font-serif font-bold text-[#fffef8] text-3xl leading-tight mb-12 tracking-tight">
-          Read
-          <br />
-          Something
-          <br />
-          Wonderful
+          {siteConfig.title.map((line, i) => (
+            <span key={i}>
+              {line}
+              {i < siteConfig.title.length - 1 && <br />}
+            </span>
+          ))}
         </h1>
 
         {/* Article List */}

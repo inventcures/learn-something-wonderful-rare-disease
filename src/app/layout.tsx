@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { siteConfig } from "@/config/site";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -9,20 +10,20 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Read Something Wonderful | Rare Diseases",
-  description: "A curated collection of wonderful reading resources about rare genetic diseases. Stories of hope, science, and the families who changed medicine.",
-  keywords: ["rare diseases", "genetic diseases", "patient stories", "medical research", "NGLY1", "cystic fibrosis", "prion disease"],
-  authors: [{ name: "InventCures" }],
+  title: siteConfig.meta.title,
+  description: siteConfig.meta.description,
+  keywords: siteConfig.meta.keywords,
+  authors: [{ name: siteConfig.meta.author }],
   openGraph: {
-    title: "Read Something Wonderful | Rare Diseases",
-    description: "A curated collection of wonderful reading resources about rare genetic diseases.",
+    title: siteConfig.meta.title,
+    description: siteConfig.meta.description,
     type: "website",
-    locale: "en_US",
+    locale: siteConfig.meta.locale,
   },
   twitter: {
     card: "summary_large_image",
-    title: "Read Something Wonderful | Rare Diseases",
-    description: "A curated collection of wonderful reading resources about rare genetic diseases.",
+    title: siteConfig.meta.title,
+    description: siteConfig.meta.description,
   },
 };
 
