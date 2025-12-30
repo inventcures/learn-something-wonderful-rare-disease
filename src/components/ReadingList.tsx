@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Resource } from '@/data/resources';
 import { Link2, ExternalLink, Loader2 } from 'lucide-react';
 
@@ -8,10 +8,10 @@ interface ReadingListProps {
   resources: Resource[];
 }
 
-// Generate Microlink screenshot URL
+// Use our caching API route for screenshots
 function getScreenshotUrl(url: string): string {
   const encoded = encodeURIComponent(url);
-  return `https://api.microlink.io/?url=${encoded}&screenshot=true&meta=false&embed=screenshot.url`;
+  return `/api/screenshot?url=${encoded}`;
 }
 
 export default function ReadingList({ resources }: ReadingListProps) {
@@ -20,11 +20,29 @@ export default function ReadingList({ resources }: ReadingListProps) {
   const [imageError, setImageError] = useState(false);
   const selectedResource = resources[selectedIndex];
 
-  const handleResourceChange = (index: number) => {
-    setSelectedIndex(index);
-    setImageLoading(true);
-    setImageError(false);
-  };
+  const handleResourceChange = useCallback((index: number) => {
+    if (index >= 0 && index < resources.length) {
+      setSelectedIndex(index);
+      setImageLoading(true);
+      setImageError(false);
+    }
+  }, [resources.length]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === 'j') {
+        e.preventDefault();
+        handleResourceChange(selectedIndex + 1);
+      } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft' || e.key === 'k') {
+        e.preventDefault();
+        handleResourceChange(selectedIndex - 1);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedIndex, handleResourceChange]);
 
   return (
     <div className="min-h-screen bg-[#6b6b5c] flex">
@@ -62,7 +80,7 @@ export default function ReadingList({ resources }: ReadingListProps) {
         <div className="relative max-w-2xl w-full">
           {/* Article Preview Card */}
           <div
-            className="bg-[#f5f5ed] rounded-lg shadow-2xl overflow-hidden transform rotate-1 relative"
+            className="bg-[#f5f5ed] rounded-lg shadow-2xl overflow-hidden relative"
             style={{
               boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
               minHeight: '600px',
