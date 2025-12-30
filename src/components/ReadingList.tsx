@@ -2,11 +2,27 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Resource } from '@/data/resources';
-import { Link2, ExternalLink, Loader2 } from 'lucide-react';
+import { Link2, Loader2 } from 'lucide-react';
 
 interface ReadingListProps {
   resources: Resource[];
 }
+
+// Color palettes for different articles (gradient from top to bottom)
+const colorPalettes = [
+  { top: '#e8e4d9', bottom: '#6b6b5c' }, // Olive/khaki
+  { top: '#dce4e8', bottom: '#4a6670' }, // Steel blue
+  { top: '#e8dce0', bottom: '#6b5a5c' }, // Dusty rose
+  { top: '#e0e8dc', bottom: '#5a6b5c' }, // Sage green
+  { top: '#e8e0d8', bottom: '#6b5f52' }, // Warm brown
+  { top: '#dce0e8', bottom: '#5a5c6b' }, // Slate purple
+  { top: '#e4e8dc', bottom: '#5c6b5a' }, // Forest
+  { top: '#e8dcd8', bottom: '#6b5a52' }, // Terracotta
+  { top: '#d8e4e8', bottom: '#526b6b' }, // Teal
+  { top: '#e8e4dc', bottom: '#6b6552' }, // Golden olive
+  { top: '#e0dce8', bottom: '#5c5a6b' }, // Lavender
+  { top: '#dce8e4', bottom: '#5a6b65' }, // Sea green
+];
 
 // Use our caching API route for screenshots
 function getScreenshotUrl(url: string): string {
@@ -19,6 +35,7 @@ export default function ReadingList({ resources }: ReadingListProps) {
   const [imageLoading, setImageLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
   const selectedResource = resources[selectedIndex];
+  const palette = colorPalettes[selectedIndex % colorPalettes.length];
 
   const handleResourceChange = useCallback((index: number) => {
     if (index >= 0 && index < resources.length) {
@@ -45,11 +62,16 @@ export default function ReadingList({ resources }: ReadingListProps) {
   }, [selectedIndex, handleResourceChange]);
 
   return (
-    <div className="min-h-screen bg-[#6b6b5c] flex">
+    <div
+      className="min-h-screen flex transition-all duration-700 ease-in-out"
+      style={{
+        background: `linear-gradient(to bottom, ${palette.top} 0%, ${palette.bottom} 100%)`,
+      }}
+    >
       {/* Left Sidebar - Navigation */}
-      <aside className="w-64 flex-shrink-0 p-8 overflow-y-auto h-screen">
+      <aside className="w-72 flex-shrink-0 p-10 overflow-y-auto h-screen">
         {/* Title */}
-        <h1 className="font-serif italic text-[#e8e8dc] text-2xl leading-tight mb-8">
+        <h1 className="font-serif font-bold text-[#fffef8] text-3xl leading-tight mb-12 tracking-tight">
           Read
           <br />
           Something
@@ -58,15 +80,15 @@ export default function ReadingList({ resources }: ReadingListProps) {
         </h1>
 
         {/* Article List */}
-        <nav className="space-y-3">
+        <nav className="space-y-4">
           {resources.map((resource, index) => (
             <button
               key={resource.id}
               onClick={() => handleResourceChange(index)}
-              className={`block w-full text-left text-sm transition-colors duration-200 ${
+              className={`block w-full text-left text-[15px] leading-snug transition-all duration-200 ${
                 index === selectedIndex
-                  ? 'text-white font-medium'
-                  : 'text-[#b8b8a8] hover:text-[#d8d8c8]'
+                  ? 'text-white font-semibold'
+                  : 'text-white/60 hover:text-white/80'
               }`}
             >
               {resource.title}
@@ -80,18 +102,18 @@ export default function ReadingList({ resources }: ReadingListProps) {
         <div className="relative max-w-2xl w-full">
           {/* Article Preview Card */}
           <div
-            className="bg-[#f5f5ed] rounded-lg shadow-2xl overflow-hidden relative"
+            className="bg-[#f8f8f4] rounded-2xl shadow-2xl overflow-hidden relative"
             style={{
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
-              minHeight: '600px',
+              boxShadow: '0 30px 60px -15px rgba(0, 0, 0, 0.35)',
+              minHeight: '550px',
             }}
           >
             {/* Loading State */}
             {imageLoading && !imageError && (
-              <div className="absolute inset-0 flex items-center justify-center bg-[#f5f5ed] z-10">
+              <div className="absolute inset-0 flex items-center justify-center bg-[#f8f8f4] z-10">
                 <div className="flex flex-col items-center gap-4">
-                  <Loader2 className="w-8 h-8 text-[#6b6b5c] animate-spin" />
-                  <p className="text-[#888] text-sm">Loading preview...</p>
+                  <Loader2 className="w-8 h-8 text-[#888] animate-spin" />
+                  <p className="text-[#999] text-sm">Loading preview...</p>
                 </div>
               </div>
             )}
@@ -112,30 +134,16 @@ export default function ReadingList({ resources }: ReadingListProps) {
               />
             ) : (
               /* Fallback Content */
-              <div className="p-12 min-h-[500px]">
-                <div className="text-center mb-8">
-                  <p className="text-[#666] text-xs italic mb-4 leading-relaxed">
-                    {selectedResource.description}
-                  </p>
-                </div>
-
+              <div className="p-12 min-h-[500px] flex flex-col justify-center">
                 <h2 className="text-4xl font-serif text-center text-[#1a1a1a] mb-4 leading-tight">
                   {selectedResource.title}
                 </h2>
-
-                <p className="text-center text-[#666] text-sm mb-8">
-                  by {selectedResource.author.toUpperCase()}
+                <p className="text-center text-[#666] text-base mb-6">
+                  by {selectedResource.author}
                 </p>
-
-                <div className="text-[#333] leading-relaxed">
-                  <span className="float-left text-6xl font-serif mr-3 mt-1 leading-none">
-                    {selectedResource.description?.[0] || 'T'}
-                  </span>
-                  <p className="text-sm text-[#555]">
-                    {selectedResource.description?.slice(1) || 'his is a remarkable story about rare diseases and the families who fight to find cures.'}
-                    {' '}The journey of understanding rare genetic conditions has been transformed by dedicated researchers and passionate advocates.
-                  </p>
-                </div>
+                <p className="text-center text-[#888] text-sm leading-relaxed max-w-md mx-auto">
+                  {selectedResource.description}
+                </p>
               </div>
             )}
           </div>
@@ -143,51 +151,39 @@ export default function ReadingList({ resources }: ReadingListProps) {
       </main>
 
       {/* Right Sidebar - Metadata */}
-      <aside className="w-72 flex-shrink-0 p-8 flex flex-col justify-center">
+      <aside className="w-80 flex-shrink-0 p-10 flex flex-col justify-end pb-24">
         {/* Year */}
-        <p className="text-[#a8a898] text-sm mb-2">
+        <p className="text-white/50 text-base font-mono mb-3">
           {selectedResource.year || '2020'}
         </p>
 
         {/* Title */}
-        <h2 className="text-white text-3xl font-semibold leading-tight mb-3">
+        <h2 className="text-white font-serif font-bold text-4xl leading-tight mb-4 tracking-tight">
           {selectedResource.title}
         </h2>
 
         {/* Author */}
-        <p className="text-[#d8d8c8] text-lg mb-4">
+        <p className="text-white/90 text-xl font-medium mb-4">
           {selectedResource.author}
         </p>
 
-        {/* Source */}
+        {/* Source as Hat tip */}
         {selectedResource.source && (
-          <p className="text-[#a8a898] text-sm mb-8">
+          <p className="text-white/50 text-base italic mb-10">
             {selectedResource.source}
           </p>
         )}
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-3">
-          {/* Link Button */}
+        {/* Link Button Only */}
+        <div className="flex items-center">
           <a
             href={selectedResource.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-12 h-12 rounded-full bg-[#7a7a6a] hover:bg-[#8a8a7a] flex items-center justify-center transition-colors"
+            className="w-14 h-14 rounded-2xl bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors backdrop-blur-sm"
             title="Open article"
           >
-            <Link2 className="w-5 h-5 text-white" />
-          </a>
-
-          {/* Read Article Button */}
-          <a
-            href={selectedResource.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 bg-[#7a7a6a] hover:bg-[#8a8a7a] text-white rounded-full px-6 py-3 flex items-center justify-center gap-2 transition-colors text-sm font-medium"
-          >
-            Read Article
-            <ExternalLink className="w-4 h-4" />
+            <Link2 className="w-6 h-6 text-white" />
           </a>
         </div>
       </aside>
