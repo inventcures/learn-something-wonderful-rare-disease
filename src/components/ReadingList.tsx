@@ -2,15 +2,29 @@
 
 import React, { useState } from 'react';
 import { Resource } from '@/data/resources';
-import { Link2, ExternalLink } from 'lucide-react';
+import { Link2, ExternalLink, Loader2 } from 'lucide-react';
 
 interface ReadingListProps {
   resources: Resource[];
 }
 
+// Generate Microlink screenshot URL
+function getScreenshotUrl(url: string): string {
+  const encoded = encodeURIComponent(url);
+  return `https://api.microlink.io/?url=${encoded}&screenshot=true&meta=false&embed=screenshot.url`;
+}
+
 export default function ReadingList({ resources }: ReadingListProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [imageLoading, setImageLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
   const selectedResource = resources[selectedIndex];
+
+  const handleResourceChange = (index: number) => {
+    setSelectedIndex(index);
+    setImageLoading(true);
+    setImageError(false);
+  };
 
   return (
     <div className="min-h-screen bg-[#6b6b5c] flex">
@@ -30,7 +44,7 @@ export default function ReadingList({ resources }: ReadingListProps) {
           {resources.map((resource, index) => (
             <button
               key={resource.id}
-              onClick={() => setSelectedIndex(index)}
+              onClick={() => handleResourceChange(index)}
               className={`block w-full text-left text-sm transition-colors duration-200 ${
                 index === selectedIndex
                   ? 'text-white font-medium'
@@ -48,38 +62,64 @@ export default function ReadingList({ resources }: ReadingListProps) {
         <div className="relative max-w-2xl w-full">
           {/* Article Preview Card */}
           <div
-            className="bg-[#f5f5ed] rounded-lg shadow-2xl overflow-hidden transform rotate-1"
+            className="bg-[#f5f5ed] rounded-lg shadow-2xl overflow-hidden transform rotate-1 relative"
             style={{
               boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+              minHeight: '600px',
             }}
           >
-            {/* Preview Content - Simulated Article */}
-            <div className="p-12 min-h-[500px]">
-              <div className="text-center mb-8">
-                <p className="text-[#666] text-xs italic mb-4 leading-relaxed">
-                  {selectedResource.description}
-                </p>
+            {/* Loading State */}
+            {imageLoading && !imageError && (
+              <div className="absolute inset-0 flex items-center justify-center bg-[#f5f5ed] z-10">
+                <div className="flex flex-col items-center gap-4">
+                  <Loader2 className="w-8 h-8 text-[#6b6b5c] animate-spin" />
+                  <p className="text-[#888] text-sm">Loading preview...</p>
+                </div>
               </div>
+            )}
 
-              <h2 className="text-4xl font-serif text-center text-[#1a1a1a] mb-4 leading-tight">
-                {selectedResource.title}
-              </h2>
+            {/* Screenshot Image */}
+            {!imageError ? (
+              <img
+                src={getScreenshotUrl(selectedResource.url)}
+                alt={`Preview of ${selectedResource.title}`}
+                className={`w-full h-auto transition-opacity duration-300 ${
+                  imageLoading ? 'opacity-0' : 'opacity-100'
+                }`}
+                onLoad={() => setImageLoading(false)}
+                onError={() => {
+                  setImageLoading(false);
+                  setImageError(true);
+                }}
+              />
+            ) : (
+              /* Fallback Content */
+              <div className="p-12 min-h-[500px]">
+                <div className="text-center mb-8">
+                  <p className="text-[#666] text-xs italic mb-4 leading-relaxed">
+                    {selectedResource.description}
+                  </p>
+                </div>
 
-              <p className="text-center text-[#666] text-sm mb-8">
-                by {selectedResource.author.toUpperCase()}
-              </p>
+                <h2 className="text-4xl font-serif text-center text-[#1a1a1a] mb-4 leading-tight">
+                  {selectedResource.title}
+                </h2>
 
-              {/* Decorative first letter */}
-              <div className="text-[#333] leading-relaxed">
-                <span className="float-left text-6xl font-serif mr-3 mt-1 leading-none">
-                  {selectedResource.description?.[0] || 'T'}
-                </span>
-                <p className="text-sm text-[#555]">
-                  {selectedResource.description?.slice(1) || 'his is a remarkable story about rare diseases and the families who fight to find cures.'}
-                  {' '}The journey of understanding rare genetic conditions has been transformed by dedicated researchers and passionate advocates.
+                <p className="text-center text-[#666] text-sm mb-8">
+                  by {selectedResource.author.toUpperCase()}
                 </p>
+
+                <div className="text-[#333] leading-relaxed">
+                  <span className="float-left text-6xl font-serif mr-3 mt-1 leading-none">
+                    {selectedResource.description?.[0] || 'T'}
+                  </span>
+                  <p className="text-sm text-[#555]">
+                    {selectedResource.description?.slice(1) || 'his is a remarkable story about rare diseases and the families who fight to find cures.'}
+                    {' '}The journey of understanding rare genetic conditions has been transformed by dedicated researchers and passionate advocates.
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </main>
