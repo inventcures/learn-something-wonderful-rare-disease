@@ -89,8 +89,8 @@ export default function ReadingList({ resources }: ReadingListProps) {
           ))}
         </nav>
 
-        {/* Matter Logo - Glowing white */}
-        <div className="pb-6">
+        {/* Footer - Matter Logo and Attribution */}
+        <div className="pb-6 flex items-center gap-6">
           <a
             href="https://hq.getmatter.com"
             target="_blank"
@@ -125,6 +125,28 @@ export default function ReadingList({ resources }: ReadingListProps) {
               Matter
             </span>
           </a>
+
+          {/* Attribution */}
+          <span className="text-white/50 text-sm">
+            Made with <span className="text-red-400">&lt;3</span> by{' '}
+            <a
+              href="https://inventcures.github.io"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white/70 hover:text-white underline underline-offset-2"
+            >
+              @tp53/ashish
+            </a>
+            ,{' '}
+            <a
+              href="https://x.com/inventcures"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white/70 hover:text-white underline underline-offset-2"
+            >
+              @inventcures
+            </a>
+          </span>
         </div>
       </aside>
 
