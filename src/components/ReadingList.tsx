@@ -49,71 +49,91 @@ export default function ReadingList({ resources }: ReadingListProps) {
 
   return (
     <>
-      {/* MOBILE LAYOUT - VERTICAL SCROLL through all cards */}
+      {/* MOBILE LAYOUT - VERTICAL SCROLL, one card per screen */}
       <div
-        className="lg:hidden min-h-screen"
+        className="lg:hidden"
         style={{
-          background: `linear-gradient(to bottom, ${palette.top} 0%, ${palette.bottom} 100%)`,
           overflowY: 'auto',
           overflowX: 'hidden',
+          scrollSnapType: 'y mandatory',
         }}
       >
-        {/* Vertical scroll container with all articles */}
-        <div style={{ paddingLeft: '24px', paddingRight: '24px', paddingTop: '60px', paddingBottom: '40px' }}>
-          {resources.map((resource, index) => (
-            <div key={resource.id} className="mb-12">
-              {/* Article Title */}
-              <h1 className="text-white font-bold text-2xl leading-tight tracking-tight mb-1">
-                {resource.title}
-              </h1>
-              {/* Author • Year */}
-              <p className="text-white/70 text-base mb-4">
-                {resource.author} • {resource.year || '2020'}
-              </p>
-
-              {/* Card Preview */}
-              <a
-                href={resource.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block"
-              >
-                <div
-                  className="bg-[#f8f8f4] rounded-2xl shadow-2xl overflow-hidden"
-                  style={{
-                    boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.35)',
-                  }}
-                >
-                  <img
-                    src={getScreenshotUrl(resource.url)}
-                    alt={`Preview of ${resource.title}`}
-                    className="w-full h-auto"
-                    loading="lazy"
-                  />
-                </div>
-              </a>
-            </div>
-          ))}
-
-          {/* Mobile Footer */}
-          <div className="pt-4 pb-6 flex justify-center">
-            <a
-              href="https://hq.getmatter.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-white/70"
+        {resources.map((resource, index) => {
+          const cardPalette = siteConfig.colorPalettes[index % siteConfig.colorPalettes.length];
+          return (
+            <div
+              key={resource.id}
+              className="min-h-screen flex flex-col"
+              style={{
+                background: `linear-gradient(to bottom, ${cardPalette.top} 0%, ${cardPalette.bottom} 100%)`,
+                scrollSnapAlign: 'start',
+                paddingLeft: '24px',
+                paddingRight: '24px',
+              }}
             >
-              <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="40" height="40" rx="12" fill="currentColor" fillOpacity="0.25" />
-                <circle cx="12" cy="20" r="3" fill="currentColor" />
-                <circle cx="20" cy="12" r="3" fill="currentColor" />
-                <circle cx="28" cy="20" r="3" fill="currentColor" />
-                <circle cx="20" cy="28" r="3" fill="currentColor" />
-                <path d="M12 20L20 12M20 12L28 20M28 20L20 28M20 28L12 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-              </svg>
-              <span className="text-base font-medium">Matter</span>
-            </a>
-          </div>
+              {/* Header area */}
+              <div style={{ paddingTop: '60px' }}>
+                <h1 className="text-white font-bold text-2xl leading-tight tracking-tight mb-1">
+                  {resource.title}
+                </h1>
+                <p className="text-white/70 text-base mb-4">
+                  {resource.author} • {resource.year || '2020'}
+                </p>
+              </div>
+
+              {/* Card - centered and fills remaining space */}
+              <div className="flex-1 flex items-center justify-center pb-8">
+                <a
+                  href={resource.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full"
+                >
+                  <div
+                    className="bg-[#f8f8f4] rounded-2xl shadow-2xl overflow-hidden"
+                    style={{
+                      boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.35)',
+                      maxHeight: '60vh',
+                    }}
+                  >
+                    <img
+                      src={getScreenshotUrl(resource.url)}
+                      alt={`Preview of ${resource.title}`}
+                      className="w-full h-auto"
+                      style={{ maxHeight: '60vh', objectFit: 'cover', objectPosition: 'top' }}
+                      loading="lazy"
+                    />
+                  </div>
+                </a>
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Footer screen */}
+        <div
+          className="min-h-screen flex items-center justify-center"
+          style={{
+            background: `linear-gradient(to bottom, ${palette.top} 0%, ${palette.bottom} 100%)`,
+            scrollSnapAlign: 'start',
+          }}
+        >
+          <a
+            href="https://hq.getmatter.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-white/70"
+          >
+            <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="40" height="40" rx="12" fill="currentColor" fillOpacity="0.25" />
+              <circle cx="12" cy="20" r="3" fill="currentColor" />
+              <circle cx="20" cy="12" r="3" fill="currentColor" />
+              <circle cx="28" cy="20" r="3" fill="currentColor" />
+              <circle cx="20" cy="28" r="3" fill="currentColor" />
+              <path d="M12 20L20 12M20 12L28 20M28 20L20 28M20 28L12 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+            <span className="text-base font-medium">Matter</span>
+          </a>
         </div>
       </div>
 
