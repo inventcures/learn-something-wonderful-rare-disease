@@ -49,7 +49,7 @@ export default function ReadingList({ resources }: ReadingListProps) {
 
   return (
     <div
-      className="min-h-screen flex flex-col lg:flex-row transition-all duration-700 ease-in-out overflow-x-hidden lg:pl-14"
+      className="min-h-screen flex flex-col lg:flex-row transition-all duration-700 ease-in-out overflow-x-hidden pl-20 lg:pl-24"
       style={{
         background: `linear-gradient(to bottom, ${palette.top} 0%, ${palette.bottom} 100%)`,
       }}
