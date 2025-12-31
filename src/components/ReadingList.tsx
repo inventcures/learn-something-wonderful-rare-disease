@@ -49,99 +49,71 @@ export default function ReadingList({ resources }: ReadingListProps) {
 
   return (
     <>
-      {/* MOBILE LAYOUT - Card view matching readsomethingwonderful.com */}
+      {/* MOBILE LAYOUT - VERTICAL SCROLL through all cards */}
       <div
-        className="lg:hidden min-h-screen flex flex-col"
+        className="lg:hidden min-h-screen"
         style={{
           background: `linear-gradient(to bottom, ${palette.top} 0%, ${palette.bottom} 100%)`,
+          overflowY: 'auto',
+          overflowX: 'hidden',
         }}
       >
-        {/* Mobile Header - Article Title */}
-        <div style={{ paddingLeft: '24px', paddingRight: '24px', paddingTop: '60px' }}>
-          <h1 className="text-white font-bold text-3xl leading-tight tracking-tight mb-2">
-            {selectedResource.title}
-          </h1>
-          {/* Author • Year on same line */}
-          <p className="text-white/70 text-lg">
-            {selectedResource.author} • {selectedResource.year || '2020'}
-          </p>
-        </div>
+        {/* Vertical scroll container with all articles */}
+        <div style={{ paddingLeft: '24px', paddingRight: '24px', paddingTop: '60px', paddingBottom: '40px' }}>
+          {resources.map((resource, index) => (
+            <div key={resource.id} className="mb-12">
+              {/* Article Title */}
+              <h1 className="text-white font-bold text-2xl leading-tight tracking-tight mb-1">
+                {resource.title}
+              </h1>
+              {/* Author • Year */}
+              <p className="text-white/70 text-base mb-4">
+                {resource.author} • {resource.year || '2020'}
+              </p>
 
-        {/* Card Preview - Centered */}
-        <div className="flex-1 flex items-center justify-center px-4 py-6">
-          <div className="w-full max-w-md">
+              {/* Card Preview */}
+              <a
+                href={resource.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block"
+              >
+                <div
+                  className="bg-[#f8f8f4] rounded-2xl shadow-2xl overflow-hidden"
+                  style={{
+                    boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.35)',
+                  }}
+                >
+                  <img
+                    src={getScreenshotUrl(resource.url)}
+                    alt={`Preview of ${resource.title}`}
+                    className="w-full h-auto"
+                    loading="lazy"
+                  />
+                </div>
+              </a>
+            </div>
+          ))}
+
+          {/* Mobile Footer */}
+          <div className="pt-4 pb-6 flex justify-center">
             <a
-              href={selectedResource.url}
+              href="https://hq.getmatter.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="block"
+              className="flex items-center gap-2 text-white/70"
             >
-              <div
-                className="bg-[#f8f8f4] rounded-2xl shadow-2xl overflow-hidden relative"
-                style={{
-                  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
-                  minHeight: '300px',
-                }}
-              >
-                {imageLoading && !imageError && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-[#f8f8f4] z-10">
-                    <Loader2 className="w-8 h-8 text-[#888] animate-spin" />
-                  </div>
-                )}
-
-                {!imageError ? (
-                  <img
-                    src={getScreenshotUrl(selectedResource.url)}
-                    alt={`Preview of ${selectedResource.title}`}
-                    className={`w-full h-auto transition-opacity duration-300 ${imageLoading ? 'opacity-0' : 'opacity-100'}`}
-                    onLoad={() => setImageLoading(false)}
-                    onError={() => { setImageLoading(false); setImageError(true); }}
-                  />
-                ) : (
-                  <div className="p-6 min-h-[300px] flex flex-col justify-center">
-                    <h2 className="text-xl font-serif text-center text-[#1a1a1a] mb-3">{selectedResource.title}</h2>
-                    <p className="text-center text-[#666] text-sm">by {selectedResource.author}</p>
-                  </div>
-                )}
-              </div>
+              <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="40" height="40" rx="12" fill="currentColor" fillOpacity="0.25" />
+                <circle cx="12" cy="20" r="3" fill="currentColor" />
+                <circle cx="20" cy="12" r="3" fill="currentColor" />
+                <circle cx="28" cy="20" r="3" fill="currentColor" />
+                <circle cx="20" cy="28" r="3" fill="currentColor" />
+                <path d="M12 20L20 12M20 12L28 20M28 20L20 28M20 28L12 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+              <span className="text-base font-medium">Matter</span>
             </a>
           </div>
-        </div>
-
-        {/* Mobile Navigation Dots */}
-        <div className="flex justify-center gap-2 pb-8">
-          {resources.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => handleResourceChange(index)}
-              className={`h-2 rounded-full transition-all duration-200 ${
-                index === selectedIndex
-                  ? 'bg-white w-6'
-                  : 'bg-white/40 w-2'
-              }`}
-              aria-label={`Go to article ${index + 1}`}
-            />
-          ))}
-        </div>
-
-        {/* Mobile Footer */}
-        <div className="pb-6 flex justify-center">
-          <a
-            href="https://hq.getmatter.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 text-white/70"
-          >
-            <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect width="40" height="40" rx="12" fill="currentColor" fillOpacity="0.25" />
-              <circle cx="12" cy="20" r="3" fill="currentColor" />
-              <circle cx="20" cy="12" r="3" fill="currentColor" />
-              <circle cx="28" cy="20" r="3" fill="currentColor" />
-              <circle cx="20" cy="28" r="3" fill="currentColor" />
-              <path d="M12 20L20 12M20 12L28 20M28 20L20 28M20 28L12 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-            <span className="text-base font-medium">Matter</span>
-          </a>
         </div>
       </div>
 
