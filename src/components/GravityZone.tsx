@@ -106,7 +106,7 @@ export default function GravityZone({ resources }: GravityZoneProps) {
       </div>
 
       {/* Main card area */}
-      <div className="absolute inset-0 flex items-center justify-center px-6 md:px-12">
+      <div className="absolute inset-0 flex items-center justify-center px-6 md:px-12 pt-20 pb-36 md:pt-0 md:pb-0">
         <div className="relative w-full max-w-2xl">
           {/* Card stack effect - cards behind */}
           {resources.slice(currentIndex + 1, currentIndex + 3).map((_, i) => (
