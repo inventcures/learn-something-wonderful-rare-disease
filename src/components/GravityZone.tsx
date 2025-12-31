@@ -2,84 +2,79 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Resource } from '@/data/resources';
-import { ChevronDown, ExternalLink, BookOpen, FileText } from 'lucide-react';
+import { ExternalLink, BookOpen, FileText } from 'lucide-react';
 
 interface GravityZoneProps {
   resources: Resource[];
 }
 
-// Soft color palette for backgrounds - each card gets a different color
+// Soft color palette for backgrounds
 const colorPalette = [
-  { bg: '#FDF8F3', accent: '#D4A574' }, // Warm cream / terracotta
-  { bg: '#F3F8FD', accent: '#7BA3C9' }, // Soft blue
-  { bg: '#F8F3FD', accent: '#A374D4' }, // Lavender
-  { bg: '#F3FDF6', accent: '#74D4A5' }, // Mint
-  { bg: '#FDF3F3', accent: '#D47474' }, // Rose
-  { bg: '#FDFAF3', accent: '#D4C474' }, // Warm yellow
-  { bg: '#F3FDFD', accent: '#74C9D4' }, // Cyan
-  { bg: '#FDF3FA', accent: '#D474B8' }, // Pink
-  { bg: '#F5F3FD', accent: '#8474D4' }, // Purple
-  { bg: '#F3FDF3', accent: '#74D474' }, // Green
-  { bg: '#FDF6F3', accent: '#D49A74' }, // Peach
-  { bg: '#F3F5FD', accent: '#7484D4' }, // Indigo
+  '#8B7355', // Warm brown
+  '#6B8E8E', // Teal
+  '#8B6B8E', // Purple
+  '#6B8E6B', // Green
+  '#8E6B6B', // Rose
+  '#8E8B6B', // Olive
+  '#6B7B8E', // Steel blue
+  '#8E6B7B', // Mauve
+  '#6B8E7B', // Sage
+  '#7B6B8E', // Violet
+  '#8E7B6B', // Tan
+  '#6B6B8E', // Indigo
 ];
 
 export default function GravityZone({ resources }: GravityZoneProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [prevIndex, setPrevIndex] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [direction, setDirection] = useState<'up' | 'down'>('down');
-  const [velocity, setVelocity] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const touchStartRef = useRef({ y: 0, time: 0 });
-  const animationRef = useRef<number | null>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Get colors for current card
-  const currentColors = colorPalette[currentIndex % colorPalette.length];
-  const prevColors = colorPalette[prevIndex % colorPalette.length];
-
-  // Spring physics for momentum scrolling
-  const applyMomentum = useCallback((initialVelocity: number) => {
-    const friction = 0.92;
-    const threshold = 0.5;
-    let vel = initialVelocity;
-
-    const animate = () => {
-      vel *= friction;
-
-      if (Math.abs(vel) < threshold) {
-        if (animationRef.current) {
-          cancelAnimationFrame(animationRef.current);
-          animationRef.current = null;
-        }
-        return;
-      }
-
-      animationRef.current = requestAnimationFrame(animate);
-    };
-
-    animate();
+  // Detect mobile
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 960);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Navigate to next/prev card with animation
-  const navigateTo = useCallback((newIndex: number, dir: 'up' | 'down', vel: number = 0) => {
-    if (newIndex < 0 || newIndex >= resources.length || isAnimating) return;
-
-    setPrevIndex(currentIndex);
-    setDirection(dir);
-    setVelocity(vel);
-    setIsAnimating(true);
-    setCurrentIndex(newIndex);
-
-    // Reset animation state after transition
-    setTimeout(() => {
-      setIsAnimating(false);
-      setVelocity(0);
-    }, 600);
-  }, [currentIndex, isAnimating, resources.length]);
-
-  // Handle scroll/swipe navigation
+  // Intersection Observer for mobile - track which card is in view
   useEffect(() => {
+    if (!isMobile) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const index = cardRefs.current.indexOf(entry.target as HTMLDivElement);
+          if (index !== -1) {
+            // Update CSS variable for scale/opacity based on intersection ratio
+            const card = entry.target as HTMLElement;
+            card.style.setProperty('--intersectionRatio', entry.intersectionRatio.toString());
+
+            // Update current index when card is mostly visible
+            if (entry.intersectionRatio > 0.5) {
+              setCurrentIndex(index);
+            }
+          }
+        });
+      },
+      {
+        threshold: Array.from({ length: 21 }, (_, i) => i / 20), // 0, 0.05, 0.1, ... 1
+        root: containerRef.current,
+      }
+    );
+
+    cardRefs.current.forEach((ref) => {
+      if (ref) observer.observe(ref);
+    });
+
+    return () => observer.disconnect();
+  }, [isMobile, resources.length]);
+
+  // Desktop: wheel navigation
+  useEffect(() => {
+    if (isMobile) return;
+
     const container = containerRef.current;
     if (!container) return;
 
@@ -89,93 +84,168 @@ export default function GravityZone({ resources }: GravityZoneProps) {
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
       const now = Date.now();
-      if (now - lastScrollTime < scrollCooldown || isAnimating) return;
-
-      const vel = Math.min(Math.abs(e.deltaY) / 50, 2);
+      if (now - lastScrollTime < scrollCooldown) return;
 
       if (e.deltaY > 30 && currentIndex < resources.length - 1) {
         lastScrollTime = now;
-        navigateTo(currentIndex + 1, 'down', vel);
+        setCurrentIndex(prev => prev + 1);
       } else if (e.deltaY < -30 && currentIndex > 0) {
         lastScrollTime = now;
-        navigateTo(currentIndex - 1, 'up', vel);
-      }
-    };
-
-    const handleTouchStart = (e: TouchEvent) => {
-      touchStartRef.current = {
-        y: e.touches[0].clientY,
-        time: Date.now()
-      };
-    };
-
-    const handleTouchEnd = (e: TouchEvent) => {
-      if (isAnimating) return;
-
-      const touchEndY = e.changedTouches[0].clientY;
-      const deltaY = touchStartRef.current.y - touchEndY;
-      const deltaTime = Date.now() - touchStartRef.current.time;
-
-      // Calculate velocity based on swipe speed
-      const swipeVelocity = Math.abs(deltaY) / deltaTime;
-      const vel = Math.min(swipeVelocity * 2, 2);
-
-      if (deltaY > 50 && currentIndex < resources.length - 1) {
-        navigateTo(currentIndex + 1, 'down', vel);
-        applyMomentum(vel);
-      } else if (deltaY < -50 && currentIndex > 0) {
-        navigateTo(currentIndex - 1, 'up', vel);
-        applyMomentum(vel);
+        setCurrentIndex(prev => prev - 1);
       }
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (isAnimating) return;
-
       if (e.key === 'ArrowDown' || e.key === 'j') {
         e.preventDefault();
         if (currentIndex < resources.length - 1) {
-          navigateTo(currentIndex + 1, 'down', 1);
+          setCurrentIndex(prev => prev + 1);
         }
       } else if (e.key === 'ArrowUp' || e.key === 'k') {
         e.preventDefault();
         if (currentIndex > 0) {
-          navigateTo(currentIndex - 1, 'up', 1);
+          setCurrentIndex(prev => prev - 1);
         }
       }
     };
 
     container.addEventListener('wheel', handleWheel, { passive: false });
-    container.addEventListener('touchstart', handleTouchStart, { passive: true });
-    container.addEventListener('touchend', handleTouchEnd, { passive: true });
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
       container.removeEventListener('wheel', handleWheel);
-      container.removeEventListener('touchstart', handleTouchStart);
-      container.removeEventListener('touchend', handleTouchEnd);
       window.removeEventListener('keydown', handleKeyDown);
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
     };
-  }, [currentIndex, resources.length, isAnimating, navigateTo, applyMomentum]);
+  }, [currentIndex, resources.length, isMobile]);
 
+  const currentColor = colorPalette[currentIndex % colorPalette.length];
+
+  // Mobile layout with native scroll-snap
+  if (isMobile) {
+    return (
+      <div className="relative w-full h-[100dvh] overflow-hidden">
+        {/* Background colors - one for each card */}
+        {resources.map((_, i) => (
+          <div
+            key={`bg-${i}`}
+            className="fixed inset-0 transition-opacity duration-500 pointer-events-none"
+            style={{
+              backgroundColor: colorPalette[i % colorPalette.length],
+              opacity: i === currentIndex ? 1 : 0,
+              zIndex: -1,
+            }}
+          />
+        ))}
+
+        {/* Fixed header */}
+        <header className="fixed top-0 left-0 right-0 z-30 px-[3.17vw] pt-12">
+          <h1 className="text-[20px] font-semibold text-white leading-tight line-clamp-2">
+            {resources[currentIndex]?.title}
+          </h1>
+          <p className="text-[15px] text-white/70 mt-1.5 font-medium">
+            {resources[currentIndex]?.author}
+            {resources[currentIndex]?.year && (
+              <span className="before:content-['_•_']">{resources[currentIndex].year}</span>
+            )}
+          </p>
+        </header>
+
+        {/* Scroll container with snap */}
+        <div
+          ref={containerRef}
+          className="h-[100dvh] w-full overflow-y-scroll overscroll-none"
+          style={{
+            scrollSnapType: 'y mandatory',
+            WebkitOverflowScrolling: 'touch',
+          }}
+        >
+          {resources.map((resource, i) => (
+            <div
+              key={resource.id}
+              ref={(el) => { cardRefs.current[i] = el; }}
+              className="flex items-center justify-center"
+              style={{
+                height: '75dvh',
+                paddingTop: '21.67dvh',
+                scrollSnapAlign: 'start',
+                scrollSnapStop: 'always',
+                maxWidth: '79.74vw',
+                margin: '0 auto',
+              }}
+            >
+              <a
+                href={resource.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full bg-white rounded-xl overflow-hidden"
+                style={{
+                  transform: `scale(calc(0.9 + 0.1 * var(--intersectionRatio, 1)))`,
+                  opacity: `calc(0.8 + 0.2 * var(--intersectionRatio, 1))`,
+                  transition: 'transform 0.3s ease, opacity 0.2s ease',
+                  boxShadow: '0 7px 21px rgba(0,0,0,0.07)',
+                  border: '2px solid rgba(255,255,255,0.3)',
+                }}
+              >
+                <div className="p-6">
+                  {/* Type badge */}
+                  <div className="flex items-center gap-2 mb-4">
+                    {resource.type === 'book' ? (
+                      <BookOpen className="w-4 h-4 text-[#B8860B]" />
+                    ) : (
+                      <FileText className="w-4 h-4 text-[#4A90A4]" />
+                    )}
+                    <span className={`text-[11px] font-semibold uppercase tracking-wider ${
+                      resource.type === 'book' ? 'text-[#B8860B]' : 'text-[#4A90A4]'
+                    }`}>
+                      {resource.type}
+                    </span>
+                  </div>
+
+                  {/* Title */}
+                  <h2 className="text-[22px] font-semibold text-[#1a1a1a] leading-tight mb-3">
+                    {resource.title}
+                  </h2>
+
+                  {/* Author */}
+                  <p className="text-[15px] text-[#666] mb-4">
+                    {resource.author}
+                  </p>
+
+                  {/* Description */}
+                  {resource.description && (
+                    <p className="text-[14px] text-[#888] leading-relaxed mb-4 line-clamp-3">
+                      {resource.description}
+                    </p>
+                  )}
+
+                  {/* Footer */}
+                  <div className="flex items-center justify-between pt-4 border-t border-[#f0f0f0]">
+                    <span className="text-[12px] text-[#aaa] font-medium">
+                      {resource.source}
+                    </span>
+                    <span className="flex items-center gap-1 text-[12px] text-[#0066CC] font-medium">
+                      Read
+                      <ExternalLink className="w-3 h-3" />
+                    </span>
+                  </div>
+                </div>
+              </a>
+            </div>
+          ))}
+        </div>
+
+        {/* Progress dots */}
+        <div className="fixed bottom-6 left-[3.17vw] z-30">
+          <p className="text-[14px] text-white/80 font-medium">
+            {currentIndex + 1} / {resources.length}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop layout (unchanged from before)
   const currentResource = resources[currentIndex];
-
-  // Calculate animation transforms based on direction and velocity
-  const getCardStyle = () => {
-    const baseTransform = isAnimating
-      ? `translateY(${direction === 'down' ? '-20px' : '20px'}) scale(${1 - velocity * 0.02})`
-      : 'translateY(0) scale(1)';
-
-    return {
-      transform: baseTransform,
-      transition: isAnimating
-        ? 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease-out'
-        : 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
-    };
-  };
 
   return (
     <div
@@ -183,67 +253,37 @@ export default function GravityZone({ resources }: GravityZoneProps) {
       className="relative w-full h-screen overflow-hidden select-none"
       style={{
         touchAction: 'none',
-        backgroundColor: currentColors.bg,
-        transition: 'background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+        backgroundColor: currentColor,
+        transition: 'background-color 0.5s ease',
       }}
     >
-      {/* Floating particles effect for mobile */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none md:hidden">
-        {[...Array(6)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full opacity-20"
-            style={{
-              width: `${20 + i * 15}px`,
-              height: `${20 + i * 15}px`,
-              backgroundColor: currentColors.accent,
-              left: `${10 + i * 15}%`,
-              top: `${20 + (i % 3) * 25}%`,
-              animation: `float${i % 3} ${3 + i * 0.5}s ease-in-out infinite`,
-              transition: 'background-color 0.8s ease',
-            }}
-          />
-        ))}
-      </div>
-
       {/* Minimal header */}
-      <header className="absolute top-0 left-0 right-0 z-30 px-6 py-5 md:px-12 md:py-8">
-        <h1
-          className="text-[15px] md:text-[17px] font-medium tracking-[-0.01em]"
-          style={{
-            color: '#1a1a1a',
-            transition: 'color 0.5s ease',
-          }}
-        >
+      <header className="absolute top-0 left-0 right-0 z-30 px-12 py-8">
+        <h1 className="text-[17px] font-medium text-white/90 tracking-[-0.01em]">
           Read Something Wonderful
         </h1>
       </header>
 
       {/* Progress indicator */}
-      <div className="absolute top-5 right-6 md:top-8 md:right-12 z-30 flex items-center gap-2">
-        <span
-          className="text-[13px] font-medium tabular-nums"
-          style={{ color: currentColors.accent, transition: 'color 0.5s ease' }}
-        >
+      <div className="absolute top-8 right-12 z-30">
+        <span className="text-[13px] text-white/70 font-medium tabular-nums">
           {currentIndex + 1} / {resources.length}
         </span>
       </div>
 
       {/* Main card area */}
-      <div className="absolute inset-0 flex items-center justify-center px-6 md:px-12 pt-20 pb-36 md:pt-0 md:pb-0">
+      <div className="absolute inset-0 flex items-center justify-center px-12">
         <div className="relative w-full max-w-2xl">
-          {/* Card stack effect - cards behind */}
+          {/* Card stack effect */}
           {resources.slice(currentIndex + 1, currentIndex + 3).map((_, i) => (
             <div
               key={`stack-${i}`}
-              className="absolute inset-0 rounded-2xl shadow-sm"
+              className="absolute inset-0 bg-white rounded-2xl"
               style={{
-                backgroundColor: 'white',
-                border: '1px solid #e5e5e5',
                 transform: `translateY(${(i + 1) * 8}px) scale(${1 - (i + 1) * 0.02})`,
                 opacity: 1 - (i + 1) * 0.3,
                 zIndex: -i - 1,
-                transition: 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
               }}
             />
           ))}
@@ -253,67 +293,49 @@ export default function GravityZone({ resources }: GravityZoneProps) {
             href={currentResource.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="block bg-white rounded-2xl overflow-hidden group"
+            className="block bg-white rounded-2xl overflow-hidden group transition-transform duration-300 hover:scale-[1.02]"
             style={{
-              ...getCardStyle(),
-              boxShadow: `0 4px 30px ${currentColors.accent}20, 0 2px 10px rgba(0,0,0,0.06)`,
-              border: `1px solid ${currentColors.accent}30`,
+              boxShadow: '0 4px 30px rgba(0,0,0,0.15)',
             }}
           >
-            {/* Accent bar at top */}
-            <div
-              className="h-1 w-full"
-              style={{
-                backgroundColor: currentColors.accent,
-                transition: 'background-color 0.5s ease',
-              }}
-            />
-
-            {/* Card content */}
-            <div className="p-8 md:p-12">
+            <div className="p-12">
               {/* Type badge */}
               <div className="flex items-center gap-2 mb-6">
                 {currentResource.type === 'book' ? (
-                  <BookOpen className="w-4 h-4" style={{ color: currentColors.accent }} />
+                  <BookOpen className="w-4 h-4 text-[#B8860B]" />
                 ) : (
-                  <FileText className="w-4 h-4" style={{ color: currentColors.accent }} />
+                  <FileText className="w-4 h-4 text-[#4A90A4]" />
                 )}
-                <span
-                  className="text-[11px] font-semibold uppercase tracking-[0.08em]"
-                  style={{ color: currentColors.accent, transition: 'color 0.5s ease' }}
-                >
+                <span className={`text-[11px] font-semibold uppercase tracking-[0.08em] ${
+                  currentResource.type === 'book' ? 'text-[#B8860B]' : 'text-[#4A90A4]'
+                }`}>
                   {currentResource.type}
                 </span>
               </div>
 
               {/* Title */}
-              <h2
-                className="text-[28px] md:text-[36px] font-semibold text-[#1a1a1a] leading-[1.2] tracking-[-0.02em] mb-4 group-hover:opacity-80 transition-opacity"
-              >
+              <h2 className="text-[36px] font-semibold text-[#1a1a1a] leading-[1.2] tracking-[-0.02em] mb-4">
                 {currentResource.title}
               </h2>
 
               {/* Author */}
-              <p className="text-[17px] md:text-[19px] text-[#666] mb-6">
+              <p className="text-[19px] text-[#666] mb-6">
                 {currentResource.author}
               </p>
 
               {/* Description */}
               {currentResource.description && (
-                <p className="text-[15px] md:text-[16px] text-[#888] leading-relaxed mb-8">
+                <p className="text-[16px] text-[#888] leading-relaxed mb-8">
                   {currentResource.description}
                 </p>
               )}
 
-              {/* Source & Read link */}
+              {/* Footer */}
               <div className="flex items-center justify-between pt-6 border-t border-[#f0f0f0]">
                 <span className="text-[13px] text-[#aaa] font-medium">
                   {currentResource.source}
                 </span>
-                <span
-                  className="flex items-center gap-1.5 text-[13px] font-medium opacity-0 group-hover:opacity-100 transition-opacity"
-                  style={{ color: currentColors.accent }}
-                >
+                <span className="flex items-center gap-1.5 text-[13px] text-[#0066CC] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                   Read {currentResource.type === 'book' ? 'more' : 'article'}
                   <ExternalLink className="w-3.5 h-3.5" />
                 </span>
@@ -323,53 +345,16 @@ export default function GravityZone({ resources }: GravityZoneProps) {
         </div>
       </div>
 
-      {/* Navigation dots */}
-      <div className="absolute left-1/2 -translate-x-1/2 bottom-24 z-30 flex gap-1.5">
-        {resources.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => {
-              if (i !== currentIndex && !isAnimating) {
-                navigateTo(i, i > currentIndex ? 'down' : 'up', 0.5);
-              }
-            }}
-            className="transition-all duration-300"
-            style={{
-              width: i === currentIndex ? '24px' : '6px',
-              height: '6px',
-              borderRadius: '3px',
-              backgroundColor: i === currentIndex ? currentColors.accent : '#ddd',
-              transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
-            }}
-            aria-label={`Go to article ${i + 1}`}
-          />
-        ))}
-      </div>
-
-      {/* Scroll hint */}
-      <div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-1"
-        style={{ color: currentColors.accent, opacity: 0.6 }}
-      >
-        <span className="text-[11px] font-medium uppercase tracking-[0.1em]">
-          Scroll
-        </span>
-        <ChevronDown className="w-4 h-4 animate-bounce" />
-      </div>
-
-      {/* Keyboard shortcuts hint */}
-      <div className="absolute bottom-8 right-6 md:right-12 z-30 hidden md:flex items-center gap-3 text-[11px] text-[#ccc]">
-        <span className="px-1.5 py-0.5 bg-[#f0f0f0] rounded text-[#999] font-mono">↑</span>
-        <span className="px-1.5 py-0.5 bg-[#f0f0f0] rounded text-[#999] font-mono">↓</span>
+      {/* Keyboard hints */}
+      <div className="absolute bottom-8 right-12 z-30 flex items-center gap-3 text-[11px] text-white/50">
+        <span className="px-1.5 py-0.5 bg-white/20 rounded font-mono">↑</span>
+        <span className="px-1.5 py-0.5 bg-white/20 rounded font-mono">↓</span>
         <span>to navigate</span>
       </div>
 
-      {/* Subtitle in bottom left */}
-      <div className="absolute bottom-8 left-6 md:left-12 z-30">
-        <p
-          className="text-[12px]"
-          style={{ color: currentColors.accent, opacity: 0.6 }}
-        >
+      {/* Subtitle */}
+      <div className="absolute bottom-8 left-12 z-30">
+        <p className="text-[12px] text-white/50">
           About Rare Diseases
         </p>
       </div>
