@@ -49,63 +49,90 @@ export default function ReadingList({ resources }: ReadingListProps) {
 
   return (
     <>
-      {/* MOBILE LAYOUT - Vertical scrolling list like readsomethingwonderful.com */}
+      {/* MOBILE LAYOUT - Card view matching readsomethingwonderful.com */}
       <div
-        className="lg:hidden min-h-screen overflow-y-auto overflow-x-hidden"
+        className="lg:hidden min-h-screen flex flex-col"
         style={{
           background: `linear-gradient(to bottom, ${palette.top} 0%, ${palette.bottom} 100%)`,
-          paddingLeft: '24px',
-          paddingRight: '24px',
         }}
       >
-        {/* Mobile Title */}
-        <h1
-          className="font-serif font-bold text-white text-3xl leading-tight tracking-tight pt-10 pb-6"
-          style={{ textShadow: '0 0 20px rgba(255,255,255,0.5), 0 0 40px rgba(255,255,255,0.3)' }}
-        >
-          {siteConfig.title.map((line, i) => (
-            <span key={i}>
-              {line}
-              {i < siteConfig.title.length - 1 && <br />}
-            </span>
-          ))}
-        </h1>
+        {/* Mobile Header - Article Title */}
+        <div style={{ paddingLeft: '24px', paddingRight: '24px', paddingTop: '60px' }}>
+          <h1 className="text-white font-bold text-3xl leading-tight tracking-tight mb-2">
+            {selectedResource.title}
+          </h1>
+          {/* Author • Year on same line */}
+          <p className="text-white/70 text-lg">
+            {selectedResource.author} • {selectedResource.year || '2020'}
+          </p>
+        </div>
 
-        {/* Category Label */}
-        <p className="text-white font-semibold text-lg mb-4">rare disease stories</p>
-
-        {/* Mobile Article List - Vertical scroll */}
-        <nav className="flex flex-col gap-5 pb-8">
-          {resources.map((resource, index) => (
+        {/* Card Preview - Centered */}
+        <div className="flex-1 flex items-center justify-center px-4 py-6">
+          <div className="w-full max-w-md">
             <a
-              key={resource.id}
-              href={resource.url}
+              href={selectedResource.url}
               target="_blank"
               rel="noopener noreferrer"
-              className={`block text-[17px] leading-snug transition-all duration-200 ${
-                index === 0
-                  ? 'text-white font-semibold'
-                  : 'text-white/50'
-              }`}
-              style={index === 0 ? {
-                textShadow: '0 0 20px rgba(255,255,255,0.5), 0 0 40px rgba(255,255,255,0.3)'
-              } : undefined}
+              className="block"
             >
-              {resource.title}
+              <div
+                className="bg-[#f8f8f4] rounded-2xl shadow-2xl overflow-hidden relative"
+                style={{
+                  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+                  minHeight: '300px',
+                }}
+              >
+                {imageLoading && !imageError && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-[#f8f8f4] z-10">
+                    <Loader2 className="w-8 h-8 text-[#888] animate-spin" />
+                  </div>
+                )}
+
+                {!imageError ? (
+                  <img
+                    src={getScreenshotUrl(selectedResource.url)}
+                    alt={`Preview of ${selectedResource.title}`}
+                    className={`w-full h-auto transition-opacity duration-300 ${imageLoading ? 'opacity-0' : 'opacity-100'}`}
+                    onLoad={() => setImageLoading(false)}
+                    onError={() => { setImageLoading(false); setImageError(true); }}
+                  />
+                ) : (
+                  <div className="p-6 min-h-[300px] flex flex-col justify-center">
+                    <h2 className="text-xl font-serif text-center text-[#1a1a1a] mb-3">{selectedResource.title}</h2>
+                    <p className="text-center text-[#666] text-sm">by {selectedResource.author}</p>
+                  </div>
+                )}
+              </div>
             </a>
+          </div>
+        </div>
+
+        {/* Mobile Navigation Dots */}
+        <div className="flex justify-center gap-2 pb-8">
+          {resources.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => handleResourceChange(index)}
+              className={`h-2 rounded-full transition-all duration-200 ${
+                index === selectedIndex
+                  ? 'bg-white w-6'
+                  : 'bg-white/40 w-2'
+              }`}
+              aria-label={`Go to article ${index + 1}`}
+            />
           ))}
-        </nav>
+        </div>
 
         {/* Mobile Footer */}
-        <div className="pb-10 flex items-center gap-4">
+        <div className="pb-6 flex justify-center">
           <a
             href="https://hq.getmatter.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 text-white"
-            style={{ filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.5))' }}
+            className="flex items-center gap-2 text-white/70"
           >
-            <svg width="36" height="36" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect width="40" height="40" rx="12" fill="currentColor" fillOpacity="0.25" />
               <circle cx="12" cy="20" r="3" fill="currentColor" />
               <circle cx="20" cy="12" r="3" fill="currentColor" />
@@ -113,7 +140,7 @@ export default function ReadingList({ resources }: ReadingListProps) {
               <circle cx="20" cy="28" r="3" fill="currentColor" />
               <path d="M12 20L20 12M20 12L28 20M28 20L20 28M20 28L12 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
-            <span className="text-lg font-medium">Matter</span>
+            <span className="text-base font-medium">Matter</span>
           </a>
         </div>
       </div>
