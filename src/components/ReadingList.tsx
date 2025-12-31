@@ -87,7 +87,7 @@ export default function ReadingList({ resources }: ReadingListProps) {
       }}
     >
       {/* Left Sidebar - Navigation (hidden on mobile) */}
-      <aside className="hidden lg:flex w-72 flex-shrink-0 px-8 py-10 h-screen flex-col">
+      <aside className="hidden lg:flex w-72 flex-shrink-0 pl-12 pr-6 py-10 h-screen flex-col">
         {/* Title - Glowing white */}
         <h1
           className="font-serif font-bold text-white text-2xl leading-tight tracking-tight"
