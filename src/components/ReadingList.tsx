@@ -46,42 +46,10 @@ export default function ReadingList({ resources }: ReadingListProps) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedIndex, handleResourceChange]);
 
-  // Touch swipe navigation for mobile
-  useEffect(() => {
-    let touchStartX = 0;
-    let touchEndX = 0;
-
-    const handleTouchStart = (e: TouchEvent) => {
-      touchStartX = e.changedTouches[0].screenX;
-    };
-
-    const handleTouchEnd = (e: TouchEvent) => {
-      touchEndX = e.changedTouches[0].screenX;
-      const swipeThreshold = 50;
-      const diff = touchStartX - touchEndX;
-
-      if (Math.abs(diff) > swipeThreshold) {
-        if (diff > 0) {
-          // Swipe left - next article
-          handleResourceChange(selectedIndex + 1);
-        } else {
-          // Swipe right - previous article
-          handleResourceChange(selectedIndex - 1);
-        }
-      }
-    };
-
-    window.addEventListener('touchstart', handleTouchStart);
-    window.addEventListener('touchend', handleTouchEnd);
-    return () => {
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, [selectedIndex, handleResourceChange]);
 
   return (
     <div
-      className="min-h-screen flex flex-col lg:flex-row transition-all duration-700 ease-in-out"
+      className="min-h-screen flex flex-col lg:flex-row transition-all duration-700 ease-in-out overflow-x-hidden"
       style={{
         background: `linear-gradient(to bottom, ${palette.top} 0%, ${palette.bottom} 100%)`,
       }}
