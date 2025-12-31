@@ -49,13 +49,14 @@ export default function ReadingList({ resources }: ReadingListProps) {
 
   return (
     <div
-      className="min-h-screen flex flex-col lg:flex-row transition-all duration-700 ease-in-out overflow-x-hidden pl-20 lg:pl-24"
+      className="min-h-screen flex flex-col lg:flex-row transition-all duration-700 ease-in-out overflow-x-hidden"
       style={{
         background: `linear-gradient(to bottom, ${palette.top} 0%, ${palette.bottom} 100%)`,
+        paddingLeft: '96px',
       }}
     >
       {/* Left Sidebar - Navigation (hidden on mobile) */}
-      <aside className="hidden lg:flex w-72 flex-shrink-0 pl-6 pr-6 py-10 h-screen flex-col">
+      <aside className="hidden lg:flex w-72 flex-shrink-0 pr-6 py-10 h-screen flex-col">
         {/* Title - Glowing white */}
         <h1
           className="font-serif font-bold text-white text-2xl leading-tight tracking-tight"
