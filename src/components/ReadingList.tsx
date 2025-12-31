@@ -46,15 +46,48 @@ export default function ReadingList({ resources }: ReadingListProps) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedIndex, handleResourceChange]);
 
+  // Touch swipe navigation for mobile
+  useEffect(() => {
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartX = e.changedTouches[0].screenX;
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      touchEndX = e.changedTouches[0].screenX;
+      const swipeThreshold = 50;
+      const diff = touchStartX - touchEndX;
+
+      if (Math.abs(diff) > swipeThreshold) {
+        if (diff > 0) {
+          // Swipe left - next article
+          handleResourceChange(selectedIndex + 1);
+        } else {
+          // Swipe right - previous article
+          handleResourceChange(selectedIndex - 1);
+        }
+      }
+    };
+
+    window.addEventListener('touchstart', handleTouchStart);
+    window.addEventListener('touchend', handleTouchEnd);
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [selectedIndex, handleResourceChange]);
+
   return (
     <div
-      className="min-h-screen flex transition-all duration-700 ease-in-out"
+      className="min-h-screen flex flex-col lg:flex-row transition-all duration-700 ease-in-out"
       style={{
         background: `linear-gradient(to bottom, ${palette.top} 0%, ${palette.bottom} 100%)`,
       }}
     >
-      {/* Left Sidebar - Navigation */}
-      <aside className="w-72 flex-shrink-0 px-8 py-10 h-screen flex flex-col">
+      {/* Left Sidebar - Navigation (hidden on mobile) */}
+      <aside className="hidden lg:flex w-72 flex-shrink-0 px-8 py-10 h-screen flex-col">
         {/* Title - Glowing white */}
         <h1
           className="font-serif font-bold text-white text-2xl leading-tight tracking-tight"
@@ -128,14 +161,24 @@ export default function ReadingList({ resources }: ReadingListProps) {
       </aside>
 
       {/* Center - Article Preview */}
-      <main className="flex-1 flex items-center justify-center p-8">
+      <main className="flex-1 flex flex-col lg:items-center lg:justify-center p-4 lg:p-8">
+        {/* Mobile Header - Title and Author above card */}
+        <div className="lg:hidden pt-16 pb-6 px-2">
+          <h2 className="text-white font-bold text-2xl leading-tight mb-1 tracking-tight">
+            {selectedResource.title}
+          </h2>
+          <p className="text-white/70 text-base">
+            {selectedResource.author} • {selectedResource.year || '2020'}
+          </p>
+        </div>
+
         <div className="relative max-w-2xl w-full">
           {/* Article Preview Card */}
           <div
             className="bg-[#f8f8f4] rounded-2xl shadow-2xl overflow-hidden relative"
             style={{
               boxShadow: '0 30px 60px -15px rgba(0, 0, 0, 0.35)',
-              minHeight: '550px',
+              minHeight: '400px',
             }}
           >
             {/* Loading State */}
@@ -164,24 +207,40 @@ export default function ReadingList({ resources }: ReadingListProps) {
               />
             ) : (
               /* Fallback Content */
-              <div className="p-12 min-h-[500px] flex flex-col justify-center">
-                <h2 className="text-4xl font-serif text-center text-[#1a1a1a] mb-4 leading-tight">
+              <div className="p-8 lg:p-12 min-h-[400px] lg:min-h-[500px] flex flex-col justify-center">
+                <h2 className="text-2xl lg:text-4xl font-serif text-center text-[#1a1a1a] mb-4 leading-tight">
                   {selectedResource.title}
                 </h2>
-                <p className="text-center text-[#666] text-base mb-6">
+                <p className="text-center text-[#666] text-sm lg:text-base mb-6">
                   by {selectedResource.author}
                 </p>
-                <p className="text-center text-[#888] text-sm leading-relaxed max-w-md mx-auto">
+                <p className="text-center text-[#888] text-xs lg:text-sm leading-relaxed max-w-md mx-auto">
                   {selectedResource.description}
                 </p>
               </div>
             )}
           </div>
         </div>
+
+        {/* Mobile Navigation Dots */}
+        <div className="lg:hidden flex justify-center gap-2 mt-6 pb-8">
+          {resources.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => handleResourceChange(index)}
+              className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                index === selectedIndex
+                  ? 'bg-white w-6'
+                  : 'bg-white/40'
+              }`}
+              aria-label={`Go to article ${index + 1}`}
+            />
+          ))}
+        </div>
       </main>
 
-      {/* Right Sidebar - Metadata */}
-      <aside className="w-96 flex-shrink-0 p-10 pt-0 flex flex-col">
+      {/* Right Sidebar - Metadata (hidden on mobile) */}
+      <aside className="hidden lg:flex w-96 flex-shrink-0 p-10 pt-0 flex-col">
         {/* Spacer to align with article preview top area */}
         <div className="h-[35vh]" />
 
